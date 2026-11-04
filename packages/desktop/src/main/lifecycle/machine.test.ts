@@ -112,6 +112,7 @@ describe("app lifecycle machine", () => {
 
   test("a restart without a handoff relaunches once the other plugins stopped", () => {
     const caller = reply()
+
     const result = replay([
       { type: "restart.requested", keep, reply: caller },
       { type: "plugins.stopped", attempt: 1 },
@@ -127,6 +128,7 @@ describe("app lifecycle machine", () => {
 
   test("a quit holds Electron until the plugins stopped, and a relaunch asked meanwhile still relaunches", () => {
     expect(preventsQuit(initialState())).toBe(true)
+
     const result = replay([
       { type: "before.quit" },
       { type: "exit.requested", mode: "relaunch" },
@@ -213,6 +215,7 @@ describe("app lifecycle machine", () => {
         row.phase === "stopping" || row.phase === "quitting"
           ? row.events
           : [{ type: "restart.requested", keep, handoff, reply: reply() }, ...row.events]
+
       const start = replay(events).state
       expect(start.status).toBe(row.phase)
       const caller = reply()

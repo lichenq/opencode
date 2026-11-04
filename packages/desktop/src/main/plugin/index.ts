@@ -82,6 +82,7 @@ export const layer = Layer.effect(
         if (current.loading) await current.loading.then((loaded) => loaded.resume())
       }).pipe(Effect.catch((error) => Effect.logError("plugins failed to resume", { error }))),
     })
+
     yield* Effect.addFinalizer(() => Effect.sync(remove))
 
     return Service.of({

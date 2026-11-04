@@ -6,7 +6,7 @@ export type Handoff = () => void | Promise<void>
 export type ExitMode = "quit" | "relaunch"
 
 /** Settles the caller's `restart` promise. */
-export type Reply = { readonly resolve: () => void; readonly reject: (error: unknown) => void }
+export type Reply = { readonly resolve: () => void; readonly reject: (cause: unknown) => void }
 
 /**
  * Where the app process stands between running and exiting. `attempt` names the async step in flight, so the result
@@ -226,7 +226,7 @@ export function createDriver(input: {
         .then(command.handoff)
         .then(
           () => dispatch({ type: "handoff.succeeded", attempt: command.attempt }),
-          (error: unknown) => dispatch({ type: "handoff.failed", attempt: command.attempt, error }),
+          (cause: unknown) => dispatch({ type: "handoff.failed", attempt: command.attempt, error: cause }),
         )
 
     if (command.type === "resume-plugins") {
