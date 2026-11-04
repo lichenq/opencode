@@ -57,7 +57,7 @@ export const layer = Layer.effect(
           },
           subscriptions,
           servers,
-          state: lifecycle.state,
+          appState: lifecycle.state,
           restart: lifecycle.restart,
           log: (message, data) => runFork(Effect.logError(message, data)),
           write: (level, message, data) => runFork(Effect.logWithLevel(LEVELS[level])(message, data)),

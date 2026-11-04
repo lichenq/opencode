@@ -170,7 +170,7 @@ export function createHost(input: {
   /** The server endpoints each window last pushed. */
   readonly servers: Map<number, readonly PluginEndpoint[]>
   /** Where the app stands between running and exiting; plugins start only while it is not quitting. */
-  readonly state: () => State
+  readonly appState: () => State
   /** Stops every plugin but the one whose scope is `keep`, then runs the handoff or relaunches. */
   readonly restart: (keep: Scope, handoff?: Handoff) => Promise<void>
   readonly log: ErrorLog
@@ -268,7 +268,7 @@ export function createHost(input: {
     status.menubarQueued = false
 
     // While quitting the menu keeps its items, a kept plugin's among them; resuming publishes it again.
-    if (isQuitting(input.state())) return
+    if (isQuitting(input.appState())) return
     refreshMenu()
     broadcast(new PluginMenubarItemsChanged({ items: listMenubarItems() }))
   }
@@ -346,7 +346,7 @@ export function createHost(input: {
     loader: (id) => loader(id),
     enabled: (id) => manager.enabled(id),
     changed: () => changed(),
-    state: input.state,
+    state: input.appState,
     restart: input.restart,
     log: input.log,
   })
@@ -412,7 +412,7 @@ export function createHost(input: {
     sidecar.module ??= await loadClient()
     const client = sidecarClient()
 
-    if (!client || isQuitting(input.state())) return
+    if (!client || isQuitting(input.appState())) return
     inventory.watch?.abort()
     const watch = new AbortController()
     inventory.watch = watch
@@ -443,7 +443,7 @@ export function createHost(input: {
     sidecar.module ??= await loadClient()
     const client = sidecarClient()
 
-    if (!client || isQuitting(input.state())) return
+    if (!client || isQuitting(input.appState())) return
 
     const listed = await client.plugin.list().then(
       (result) => result.data,
@@ -466,7 +466,7 @@ export function createHost(input: {
       shipped.filter((plugin) => !reserved.includes(plugin.id)).map((plugin) => readPlugin(client, plugin.id, parts)),
     )
 
-    if (isQuitting(input.state())) return
+    if (isQuitting(input.appState())) return
     applyPlugins(new Map(read.flatMap((entry) => (entry ? [entry] : []))), reserved, parts)
   }
 
@@ -495,7 +495,7 @@ export function createHost(input: {
 
     if (skipped.get(id) === bundle.revision) return void parts.unsupported.add(id)
 
-    if (isQuitting(input.state())) return undefined
+    if (isQuitting(input.appState())) return undefined
 
     const loaded = await evaluateMain(bundle.code).then(
       (value) => ({ ok: true as const, value }),
