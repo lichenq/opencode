@@ -11,7 +11,14 @@ import { safeWebContentsURL } from "../windows/state"
 import { getLastFocusedWindow, getWindowByID, mainWindows, setAppQuitting, setRelaunchHandler } from "../windows"
 import type { Scope } from "@opencode/plugin/gui/host"
 import { marks } from "./marks"
-import { createDriver, isQuitting, preventsQuit, quitsWhenAllWindowsClosed, type Handoff, type State } from "./machine"
+import {
+  createDriver,
+  preventsQuit,
+  quitsWhenAllWindowsClosed,
+  restoresWindows,
+  type Handoff,
+  type State,
+} from "./machine"
 import { initializeFirstLaunchOnboarding } from "./onboarding"
 import { Shutdown } from "./shutdown"
 import { consoleReturnWindow } from "./deep-link"
@@ -154,7 +161,7 @@ const runtime = Layer.effect(
     }
 
     const activate = () => {
-      if (isQuitting(driver.state())) return
+      if (!restoresWindows(driver.state())) return
 
       if (BrowserWindow.getAllWindows().length === 0) restoreWindows()
     }

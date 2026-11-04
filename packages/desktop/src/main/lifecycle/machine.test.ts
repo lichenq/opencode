@@ -6,6 +6,7 @@ import {
   keptScope,
   preventsQuit,
   quitsWhenAllWindowsClosed,
+  restoresWindows,
   transition,
   type Event,
   type Reply,
@@ -224,6 +225,38 @@ describe("app lifecycle machine", () => {
         state: start,
         commands: [{ type: "reject", reply: caller, reason: { kind: row.kind } }],
       })
+    },
+  )
+
+  test.each([
+    { phase: "running", events: [], restores: true },
+    { phase: "suspending", events: [{ type: "restart.requested", keep, handoff, reply: reply() }], restores: true },
+    {
+      phase: "handing-off",
+      events: [
+        { type: "restart.requested", keep, handoff, reply: reply() },
+        { type: "plugins.stopped", attempt: 1 },
+      ],
+      restores: true,
+    },
+    {
+      phase: "resuming",
+      events: [
+        { type: "restart.requested", keep, handoff, reply: reply() },
+        { type: "plugins.stopped", attempt: 1 },
+        { type: "handoff.failed", attempt: 1, error: "failed" },
+      ],
+      restores: true,
+    },
+    { phase: "stopping", events: [{ type: "before.quit" }], restores: false },
+    { phase: "quitting", events: [{ type: "will.quit" }], restores: false },
+  ] satisfies { phase: State["status"]; events: Event[]; restores: boolean }[])(
+    "the macOS dock reopens windows while $phase: $restores",
+    (row) => {
+      const state = replay(row.events).state
+
+      expect(state.status).toBe(row.phase)
+      expect(restoresWindows(state)).toBe(row.restores)
     },
   )
 

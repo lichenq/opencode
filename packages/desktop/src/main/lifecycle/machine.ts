@@ -82,6 +82,9 @@ export const isQuitting = (state: State) => state.status !== "running" && state.
 export const keptScope = (state: State) =>
   state.status === "suspending" || state.status === "handing-off" ? state.keep : undefined
 
+/** The macOS dock reopens windows until a real quit starts; a restart handoff can still fail and keep the app. */
+export const restoresWindows = (state: State) => state.status !== "stopping" && state.status !== "quitting"
+
 /** Electron's `before-quit` waits for the plugins to stop first. */
 export const preventsQuit = (state: State) => state.status !== "handing-off" && state.status !== "quitting"
 
